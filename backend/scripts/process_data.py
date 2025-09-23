@@ -3,6 +3,16 @@ import pandas as pd
 import re
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np 
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+import pickle
+import os
+from scipy.sparse import hstack
 
 class VulnerabilityDataProcessor:
     def __init__(self, data_path="data/basic_data_3.jsonl"):
@@ -67,25 +77,63 @@ class VulnerabilityDataProcessor:
             'has_validation': any(keyword in code_str.lower() for keyword in
                                   ['validate', 'sanitize', 'escape', 'filter']),
             'has_quotes': "'" in code_str or '"' in code_str,
-            'has concatenation': '+' in code_str or '${' in code_str or '%s' in code_str
+            'has_concatenation': '+' in code_str or '${' in code_str or '%s' in code_str
 
         }
         return features
+    
+    def preprocess_data(self):
+        self.df['clean_code'] = self.df['code_snippet'].apply(self.clean_code)
 
-    df['clean_code'] = df['code_snippet'].apply(clean_code)
+        # Extract the features 
+        feature_dicts = self.df['clean_code'].apply(self.extract_features)
+        feature_df = pd.DataFrame(feature_dicts.tolist())
 
-    print("\nSample Cleaned Code:")
-    print(df[['code_snippet', 'clean_code']].head())
+        # Combine the data
+        self.df = pd.concat([self.df, feature_df, axis=1])
+        self.df['vuln_category'] = self.df['vulnerability_type'].apply(self.categorize_vulnerability)
 
-    # Visualize the vulnerability types 
-    plt.figure(figsize=(12, 6))
-    sns.countplot(y='vulnerability_type',
-        data=df,
-        order=df['vulnerability_type'].value_counts().index,
-        palette='viridis'
-    )
-plt.title("Distribution of Vulnerability Types")
-plt.xlabel("Count")
-plt.ylabel("Vulnerability Type")
-plt.tight_layout()
-plt.show()
+        print("Completed data preprocessing")
+        return self.df
+                                  
+   
+    def categorize_vulnerability(self, vuln_type):
+        vuln_lower = vuln_type.lower()
+
+        if any(term in vuln_lower for term in ['sql', 'injection', 'command']):
+            return 'Injection'
+        elif any(term in vuln_lower for term in ['xss', 'cross-site']):
+            return 'XSS'
+        elif any(term in vuln_lower for term in ['auth', 'session', 'token']):
+            return 'Authentification'
+        elif any(term in vuln_lower for term in ['file', 'upload', 'path']):
+            return 'File_Handling'
+        elif any(term in vuln_lower for term in ['config', 'cord', 'header']):
+            return 'Configuration'
+        else:
+            return 'Other'
+
+    # Prepare data or machine learning
+    def prepare_ml_data(self):
+        # USING TF-IDF for text features 
+        self.vectorizer = TfidfVectorizer(
+            max_features=1000,
+            stop_words='english',
+            ngram_range=(1, 2),
+            min_df=2
+        )
+
+        text_features = self.vectorizer.fit_transform(self.df['clean_code'])
+        feature_cols = ['has_user_input', 'has_db_operation', 'has_file_operation', 'has_eval', 
+                        'code_length', 'has_validation', 'has_quotes','has_concatenation']
+        numerical_features = self.df[feature_cols].fillna(0).astype(int)
+
+    # Combine features 
+        X = hstack([text_features, numerical_features.values])     
+
+    #Encode the labels now 
+        self.label_encoder = LabelEncoder()
+        y = self.label_encoder.fit_transform(self.df['vuln_category'])   
+
+        return X, y 
+
