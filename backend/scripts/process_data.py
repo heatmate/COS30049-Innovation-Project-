@@ -5,12 +5,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load dataset
+rows = []
 with open("data/basic_data_3.jsonl", "r", encoding="utf-8") as f:
-    rows = [json.loads(line) for line in f]
-
-df = pd.DataFrame(rows)
-print("Sample rows:")
-print(df.head())
+    for i, line in enumerate(f, 1):
+        try:
+            rows.append(json.loads(line))
+        except json.JSONDecodeError as e:
+            print(f"Skipping line {i}: {e}")
 
 # Clean code snippets
 def clean_code(code):
