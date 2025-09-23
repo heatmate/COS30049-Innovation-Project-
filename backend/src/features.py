@@ -2,7 +2,7 @@ import re
 import pandas as pd 
 
 # Clean and normalise code snippets for easier processing
-def clean_code(self, code):
+def clean_code(code):
     if pd.isna(code):
         return ""
     # Removes all comments
