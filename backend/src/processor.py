@@ -6,40 +6,56 @@ class VulnerabilityDataProcessor:
     def __init__(self, data_path="data/basic_data_3.jsonl"):
         self.data_path = data_path
         self.df = None
+        self.error_df = None
 
     # Load basic dataset and validate JSONL 
     def load_data(self):
-        rows = []
-        errors = []
+        rows, errors = [], []
         
         with open(self.data_path, "r", encoding="utf-8") as f:
-            for i, line in enumerate(f, 1):
-                try:
-                    rows.append(json.loads(line))
-                except json.JSONDecodeError as e:
-                    errors.append({
-                        "line_number": i,
-                        "line_content": line.strip(),
-                        "error_message": str(e)
-                    })
+            content = f.read().strip()
+
+        # First Case: a Valid JSON arrary that begins with "["" and ends with "]""
+        if content.startswith("["):
+            rows = json.loads(content)
+
+        # Case 2: JSONL (one object per line)
+        elif "\n" in content and content.splitlines()[0].strip().startswith("{"):
+            for i, line in enumerate(content.splitlines(), 1):
+                  try:
+                     rows.append(json.loads(line))
+                  except json.JSONDecodeError as e:
+                      errors.append({
+                          "line_number": i,
+                          "line_content": line.strip(),
+                          "error_message": str(e)
+                  })
+
+        # Case 3: The sample dataset given is multi-line and starts with "{", no valid JSON "[" 
+        else:
+            buffer = ""
+            start_line = 0
+            for i, line in enumerate(content.splitlines(), 1):
+                line = line.strip()
+                if not line:
+                    continue
+                if not buffer:
+                    start_line = i 
+                buffer += line
+                if line.endswith("}"):
+                    try:
+                        rows.append(json.loads(buffer))
+                    except json.JSONDecodeError as e:
+                        errors.append({
+                            "line_number": start_line,
+                            "line_content": buffer,
+                            "error_message": str(e)
+                        })
+                    buffer = ""
 
         # DataFrames
         self.df = pd.DataFrame(rows)
         self.error_df = pd.DataFrame(errors)
-
-        print(f"Loaded {len(self.df)} valid rows.")
-        print(f"Found {len(self.error_df)} invalid rows.")
-
-        if self.df.empty:
-            print("Warning: No valid rows found. Dataset may be entirely malformed.")
-            # Skip column check if no valid rows
-        else:
-            # Only check required columns if there are valid rows
-            required_cols = ['code_snippet', 'vulnerability_type']
-            missing = [col for col in required_cols if col not in self.df.columns]
-            if missing:
-                raise ValueError(f"Missing columns in valid rows: {missing}")
-
         return self.df, self.error_df
     
     # Group vulnerability types categorically
@@ -59,8 +75,8 @@ class VulnerabilityDataProcessor:
             return 'Other'
 
     # Preprocess dataset (clean, features, categories)
-    def preprocess_data(self):
-        if self.df is None:
+    def preprocess_data(self, clean_code, extract_features):
+        if self.df is None or self.df.empty:
             raise ValueError("Data didn't load, try calling load_data() before preprocess_data()")
         
         self.df['clean_code'] = self.df['code_snippet'].apply(clean_code)
@@ -70,3 +86,11 @@ class VulnerabilityDataProcessor:
         self.df['vuln_category'] = self.df['vulnerability_type'].apply(self.categorize_vulnerability)
         print("Completed data preprocessing")
         return self.df
+
+
+processor = VulnerabilityDataProcessor(data_path="data/basic_data_3.jsonl")
+df, error_df = processor.load_data()
+print("Valid rows:", len(df))      # Should be ~9900
+print("Error rows:", len(error_df)) # Should be very small or 0
+df = processor.preprocess_data(clean_code, extract_features)
+print(df.head())
