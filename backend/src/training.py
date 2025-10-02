@@ -6,14 +6,15 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, accuracy_score, mean_squared_error, r2_score
 from scipy.sparse import hstack
+from sklearn.ensemble import RandomForestRegressor
 
-# Prepare data or machine learning
-def prepare_ml_data(df):
+# Prepare ML dataset and targets for the models
+def prepare_ml_data(df, target_class='vuln_category', target_reg='vul'):
     # USING TF-IDF for text features 
     vectorizer = TfidfVectorizer(
-        max_features=1000,
+        max_features=500,
         stop_words='english',
         ngram_range=(1, 2),
         min_df=2
@@ -27,31 +28,33 @@ def prepare_ml_data(df):
     # Combine features 
     X = hstack([text_features, numerical.values])     
     encoder = LabelEncoder()
-    y = encoder.fit_transform(df['vuln_category'])   
-    return X, y, vectorizer, encoder
+    y_class = encoder.fit_transform(df[target_class])
+    y_reg = df[target_reg].astype(float).values
+     
+    return X, y_class, y_reg, vectorizer, encoder
 
-# Train ML Models: Random Forest + Logistic Regression"
+# Train ML Models: Random Forest + Logistic Regression" CHANGED TO EACH MODEL
 def train_models(df):
-    X, y, vectorizer, encoder = prepare_ml_data(df)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+    X, y_class, y_reg, vectorizer, encoder = prepare_ml_data(df)
+    X_train, X_test, y_train_class, y_test_class, y_train_reg, y_test_reg = train_test_split(
+    X, y_class, y_reg, test_size=0.2, stratify=y_class, random_state=42
+)
+    log_model = LogisticRegression(max_iter=1000, random_state=42)
+    rf_model = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=1)
 
-    models = {
-        'random_forest': RandomForestClassifier(n_estimators=100, random_state=42),
-        'logistic_regression': LogisticRegression(max_iter=1000, random_state=42),
-    }
+    print("Training Logistic Regression (classification)...")
+    log_model.fit(X_train, y_train_class)
+    y_pred_class = log_model.predict(X_test)
+    print(f"Accuracy: {accuracy_score(y_test_class, y_pred_class):.3f}")
+    print(classification_report(y_test_class, y_pred_class, target_names=encoder.classes_))
 
+    print("\nTraining Random Forest (regression)...")
+    rf_model.fit(X_train, y_train_reg)
+    y_pred_reg = rf_model.predict(X_test)
+    print(f"MSE: {mean_squared_error(y_test_reg, y_pred_reg):.3f}")
+    print(f"R2 Score: {r2_score(y_test_reg, y_pred_reg):.3f}")
 
-    results = {}
-    for name, model in models.items():
-        print(f"Training {name}...")
-        model.fit(X_train, y_train)
-        preds = model.predict(X_test)
-        acc = accuracy_score(y_test, preds)
-        print(f"{name} Accuracy {acc:.3f}")
-        print(classification_report(y_test, preds, target_names=encoder_classes_))
-        results[name] = model
-
-    return results, vectorizer, encoder 
+    return {'logistic_regression': log_model, 'random_forest_regressor': rf_model}, vectorizer, encoder
 
 # Save the models and the preprocessing
 def save_models(models, vectorizer, encoder, models_dir="models"):

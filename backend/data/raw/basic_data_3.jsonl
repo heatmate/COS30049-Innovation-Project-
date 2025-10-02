@@ -4498,7 +4498,8 @@
   "code_snippet": "post \"/login\", AuthController, :login",
   "exploitation_techniques": "Brute force login attempts.",
   "mitigation": "Use Plug.RateLimit: plug :rate_limit, max: 5, interval: 60_000"
-}{
+}
+{
   "id": "vuln-401",
   "language": "Kotlin",
   "vulnerability_type": "Insecure Session Timeout",
