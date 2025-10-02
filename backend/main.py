@@ -30,7 +30,8 @@ def main():
     print(f"Final Dataset Shape: {combined.shape}")
 
     print("NaNs in regression target:", combined['vul'].isna().sum())
-
+    df_sample = combined.sample(5000, random_state=42)
+    
     # ML Model Training
     print("Training Models.........")
     models, vectorizer, encoder = train_models(combined)

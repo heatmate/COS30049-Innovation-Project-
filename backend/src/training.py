@@ -40,7 +40,7 @@ def train_models(df):
     X, y_class, y_reg, test_size=0.2, stratify=y_class, random_state=42
 )
     log_model = LogisticRegression(max_iter=1000, random_state=42)
-    rf_model = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=1)
+    rf_model = RandomForestRegressor(n_estimators=10, random_state=42, n_jobs=1)
 
     print("Training Logistic Regression (classification)...")
     log_model.fit(X_train, y_train_class)
