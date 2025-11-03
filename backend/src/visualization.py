@@ -10,8 +10,8 @@ PLOTS_DIR = os.path.join(BASE_DIR, "plots")
 
 os.makedirs(PLOTS_DIR, exist_ok=True)
 
-def generate_visuliaztions():
-    df = pd.read_csv(DATA_PATH, low_memory=False)
+def generate_visualizations(data_path=DATA_PATH, output_dir=PLOTS_DIR):
+    df = pd.read_csv(data_path, low_memory=False)
     print(f"Dataset loaded successfully: {df.shape[0]} rows, {df.shape[1]} columns\n")
 
     #Identify the label column automatically 
@@ -26,21 +26,21 @@ def generate_visuliaztions():
 
     print(f"Using '{label_col}' as target column.\n")
 
-    # === Correlation Heatmap ===
+    # Correlation heatmap
     numeric_df = df.select_dtypes(include=["number", "bool"]).copy()
-    if label_col in numeric_df.columns:
+    if not numeric_df.empty:
         corr = numeric_df.corr(numeric_only=True)
         plt.figure(figsize=(10, 8))
         sns.heatmap(corr, cmap="coolwarm", annot=False)
         plt.title("Correlation Heatmap of Numerical Features")
         plt.tight_layout()
-        heatmap_path = os.path.join(PLOTS_DIR, "correlation_heatmap.png")
+        heatmap_path = os.path.join(output_dir, "correlation_heatmap.png")
         plt.savefig(heatmap_path)
         plt.close()
     else:
         heatmap_path = None 
 
-    # === Distribution of Label Column ===
+    # Distribution of Label Column 
     plt.figure(figsize=(8, 6))
     if df[label_col].dtype == "object":
         df[label_col].value_counts().plot(kind="bar", color="skyblue")
@@ -52,9 +52,9 @@ def generate_visuliaztions():
     plt.xlabel(label_col)
     plt.ylabel("Count")
     plt.tight_layout()
-    dist_path = os.path.join(PLOTS_DIR, f"{label_col}_distribution.png")
+    dist_path = os.path.join(output_dir, f"{label_col}_distribution.png")
     plt.savefig(dist_path)
-    plt.show()
+    plt.close()
 
     # Compare model metrics
     metrics_path = os.path.join(BASE_DIR, "models", "model_metrics.csv")
@@ -64,7 +64,7 @@ def generate_visuliaztions():
         sns.barplot(x="Model", y="Score", data=metrics_df)
         plt.title("Model Performance Comparison")
         plt.tight_layout()
-        model_comp_path = os.path.join(PLOTS_DIR, "model_comparison.png")
+        model_comp_path = os.path.join(output_dir, "model_comparison.png")
         plt.savefig(model_comp_path)
         plt.close()
     else:
@@ -73,8 +73,34 @@ def generate_visuliaztions():
     print(f"\nAll visualizations saved : {PLOTS_DIR}")
 
     return {
-        "heatmap": heatmap_path,
-        "distribution": dist_path,
-        "model_comparison": model_comp_path
+        "heatmap": heatmap_path or None,
+        "distribution": dist_path or None,
+        "model_comparison": model_comp_path or None
     }
 
+# generate distribution chart used by FastAPI
+def generate_distribution_chart():
+    df = pd.read_csv(DATA_PATH, low_memory=False)
+    label_col = None 
+    for possible in ["vul", "vuln_category", "target"]:
+        if possible in df.columns:
+            label_col = possible
+            break
+    if label_col is None:
+        raise ValueError("No target column found")
+    
+    plt.figure(figsize=(8, 6))
+    if df[label_col].dtype == "object":
+        df[label_col].value_counts().plot(kind="bar", color="skyblue")
+        plt.title(f"Distribution of {label_col} Categories")
+    else:
+        sns.histplot(df[label_col], kde=True, color="orange")
+        plt.title(f"distribution of {label_col} Values")
+    plt.xlabel(label_col)
+    plt.ylabel("Count")
+    plt.tight_layout()
+    chart_path = os.path.join(PLOTS_DIR, f"{label_col}_distribution.png")
+    plt.savefig(chart_path)
+    plt.close()
+
+    return chart_path

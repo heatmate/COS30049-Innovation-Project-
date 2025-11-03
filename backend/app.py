@@ -5,6 +5,13 @@ import time
 import joblib
 import os 
 from src.prediction import predict_vulnerability
-from src.visualization import 
+from src.visualization import generate_visualizations, generate_distribution_chart
 
+# Initialise the FastAPI application
 app = FastAPI(title="Software Vulnerability Detection API")
+
+# Path configurations 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PLOTS_DIR = os.path.join(BASE_DIR, "plots")
+
+# Lets Input the prediction model
