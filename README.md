@@ -1,51 +1,70 @@
-How to Run
-Create and activate the virtual environment
-GO - cd software-detection 
-then - cd backend
-then - python -m venv venv
-venv\Scripts\activate     # Windows
-or 
-source venv/bin/activate  # Mac
+# Getting Started with Create React App
 
-INSTALL DEPENDENDS
-pip install -r requirements.txt
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-Run the main training pipeline
-cd backend
-python main.py
+## Available Scripts
 
-this command does this:
-Loads and cleans the datasets
-Combines JSON + CSV data
-Trains both classification and regression models
-Saves results in backend/models/
+In the project directory, you can run:
 
-Generate visualizations!!!!
-cd src
-python visualization.py
+### `npm start`
 
-This produces - 
-correlation_heatmap.png
-vulnerability_distribution.png
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-All saved i -
-backend/plots/
+The page will reload when you make changes.\
+You may also see any lint errors in the console.
 
-Model Results
-Logistic Regression	Classification	Accuracy	0.947
-Random Forest	Regression	R² Score	0.985
+### `npm test`
 
-Visualizations:
-Correlation Heatmap — shows relationships between numerical features
-Label Distribution Chart — displays vulnerability type frequencies
+Launches the test runner in the interactive watch mode.\
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-(Optional) Model Comparison Chart
+### `npm run build`
 
-Notes:
-2 Datasets Used found on Kaggle and Initial assignment
+Builds the app for production to the `build` folder.\
+It correctly bundles React in production mode and optimizes the build for the best performance.
 
-Author
+The build is minified and the filenames include the hashes.\
+Your app is ready to be deployed!
 
-Heath Sullivan, Jean Palamara, Matthew Docherty 
-COS30049 — Software Innovation Project
-Swinburne University of Technology — 2025
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+
+If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+
+You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+
+### Analyzing the Bundle Size
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+
+### Making a Progressive Web App
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+
+### Advanced Configuration
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+
+### Deployment
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+
+### `npm run build` fails to minify
+
+This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
