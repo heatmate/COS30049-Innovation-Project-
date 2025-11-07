@@ -34,4 +34,14 @@ def extract_features(code):
         'has_concatenation': '+' in code_str or '${' in code_str or '%s' in code_str
     }
 
+def clean_code_str(code: str):
+  
+    # Removes all comments
+    code = re.sub(r'//.*|/\*[\s\S]*?\*/', '', str(code))
+    # Removes the extra whitespace
+    code = re.sub(r'\s+', ' ', code)
+    # Remove the common boilerplate
+    code = re.sub(r'require\([\'"][\w\-/\.]+[\'"]\)', 'require()', code)
+    return code.strip()
+
 

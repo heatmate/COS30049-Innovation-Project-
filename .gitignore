@@ -1,0 +1,45 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+.venv/
+venv/
+.env
+env/
+.DS_Store
+
+# FastAPI uploads / models
+uploaded_files/
+vectorizer.pkl
+logistic_regression.pkl
+label_encoder.pkl
+
+# Node
+node_modules/
+dist/
+.vite/
+*.log
+.env.local
+.cache/
+
+# VSCode / IDEs
+.vscode/
+.idea/
+*.swp
+
+# OS junk
+Thumbs.db
+
+# Ignore raw and processed data
+data/raw/
+data/processed/
+
+# Ignore Python virtual environment
+venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
