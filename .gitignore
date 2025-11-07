@@ -39,7 +39,7 @@ data/processed/
 # Ignore Python virtual environment
 venv/
 
-# Ignore Python cache
+# Ignore Python cache (again...... from previous assignmnet)
 __pycache__/
 *.pyc
 
